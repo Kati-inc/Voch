@@ -1678,7 +1678,9 @@
         </div>
         <div class="cta-divider reveal reveal-delay-2">or</div>
         <div class="reveal reveal-delay-2">
-          <a href="mailto:hello@Voch.ng" class="contact-btn">✉ hello@Voch.ng</a>
+          <a href="mailto:samsonomotayo43@gmail.com" class="contact-btn"
+            >✉ hello@Voch.ng</a
+          >
         </div>
         <div class="reveal reveal-delay-3" style="margin-top: 24px">
           <a
@@ -1732,13 +1734,49 @@
           setTimeout(() => (input.style.borderColor = ""), 1500);
           return;
         }
-        input.disabled = true;
-        document.querySelector(".waitlist-form .btn-primary").textContent =
-          "You're on the list ✓";
-        document.querySelector(".waitlist-form .btn-primary").style.background =
-          "#16A34A";
-        msg.textContent = `We've saved ${val}. We'll be in touch soon.`;
-        msg.style.color = "#1DB954";
+
+        const btn = document.querySelector(".waitlist-form .btn-primary");
+        btn.disabled = true;
+        btn.textContent = "Joining...";
+
+        // Send email to backend
+        fetch("/api/waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: val }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              input.disabled = true;
+              btn.textContent = "You're on the list ✓";
+              btn.style.background = "#16A34A";
+              msg.textContent = `We've saved ${val}. We'll be in touch soon.`;
+              msg.style.color = "#1DB954";
+            } else {
+              msg.textContent = data.error || "Something went wrong";
+              msg.style.color = "#EF4444";
+              btn.disabled = false;
+              btn.textContent = "Join waitlist";
+              setTimeout(() => {
+                msg.textContent =
+                  "No spam. We'll only email you when we're ready to onboard.";
+                msg.style.color = "";
+              }, 3000);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            msg.textContent = "Network error. Please try again.";
+            msg.style.color = "#EF4444";
+            btn.disabled = false;
+            btn.textContent = "Join waitlist";
+            setTimeout(() => {
+              msg.textContent =
+                "No spam. We'll only email you when we're ready to onboard.";
+              msg.style.color = "";
+            }, 3000);
+          });
       }
 
       // Enter key for waitlist
